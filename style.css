@@ -36,7 +36,7 @@ input[class="submit"] {
     font-size: 100%;
 }
 
-button {
+form > button {
     width: 5rem;
     height: 53%;
     border: 0px solid black;
@@ -44,6 +44,27 @@ button {
     border-radius: 3px;
     background-color: #008cba;
 }
+
+.btn {
+    width: 45%;
+    height: 45%;
+    border: 0px;
+    margin: 2px;
+    padding: 1px;
+    color: white;
+    border-radius: 2px;
+    padding: 1px;
+}
+
+.btn--edit {
+    background-color: var(--color-blue);
+}
+
+.btn--delete {
+    background-color: var(--color-red);
+}
+
+
 
 .todo-list-full {
     background-color: var(--color-white);
@@ -67,7 +88,7 @@ li {
     font-size: 28px;
     list-style-type: none;
     text-align: center;
-    width: 20rem;
+    width: 22rem;
     margin: 2%;
     border-radius: 10px;
     display: flex;
@@ -78,26 +99,6 @@ li {
 span {
     width: 200%;
     flex-grow: 1;
-}
-
-.btn-container {
-    width: 150%;
-}
-
-svg {
-    width: 3rem;
-    height: 3rem;
-    padding: 1%;
-    margin: 1%;
-    border-radius: 3px;
-}
-
-svg[class="btn--edit"] {
-    background-color: var(--color-blue);
-
-}
-svg[class="btn--delete"] {
-    background-color: var(--color-red);
 }
 
 .completed {

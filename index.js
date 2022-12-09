@@ -49,6 +49,7 @@ const Model = (() => {
         }
 
         set todos(newTodo) {
+            console.log(this.#onChange)
             this.#todos = newTodo;
             this.#onChange?.();
         }
@@ -79,11 +80,8 @@ const View = (() => {
             const todoTemplate = `<li>
             <${!todo.editable ? "span" : `input value="${todo.title}" type='text'`} id="${todo.id}" ${todo.completed ? 'class="completed"' : ""}>
             ${!todo.editable ? todo.title : ""}</${!todo.editable ? "span" : "input"}>
-            <div class="btn-container">
-            <svg data-state=${!todos.editable ? "Edit" : "Submit"} fill="#fff" class="btn--edit" id=${todo.id} focusable="false" aria-hidden="true" viewBox="0 0 24 24" aria-label="fontSize small"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a.9959.9959 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"></path></svg>
-            <svg class="btn--delete" fill="#fff" focusable="false" aria-hidden="true" viewBox="0 0 24 24" data-testid="DeleteIcon" aria-label="fontSize small"><path id=${todo.id} class="btn--delete" d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg>
-            </div>
-            `;
+            <button id=${todo.id} class="btn btn--edit">${!todo.editable ? "Edit" : "Submit"}</button>
+            <button class="btn btn--delete" id="${todo.id}">remove</button></li>`;
             
             if(todo.completed) {
                 templateCompleted += todoTemplate;
@@ -118,6 +116,7 @@ const ViewModel = ((View, Model) => {
 
     const addTodo = () => {
         View.formEl.addEventListener("submit", (event) => {
+            console.log("check")
             event.preventDefault();
             
             const title = event.target[0].value;
@@ -141,71 +140,82 @@ const ViewModel = ((View, Model) => {
     const removeTodo = () => {
         let fullList = document.querySelector(".todo-list-full")
         fullList.addEventListener("click",(event)=>{
+            console.log(event.target.innerHTML)
             const id = event.target.id;
+
             // handles deletion
-            if(event.target.classList.value === "btn--delete"){
+            if(event.target.innerHTML === "remove"){
                 Model.removeTodo(id).then(res=>{
                     state.todos = state.todos.filter(todo=> +todo.id !== +id)
                 }).catch(err=>alert(`delete todo failed: ${err}`))
             }
-                 // handles completed strikethroughs
-                    let completeClass = event.target.classList.value.split(" ").includes("completed")
-                    if(event.target.tagName === "SPAN") {
-                        let updated = {
-                            title: event.target.innerHTML,
-                            completed: !completeClass,
-                            editable: false,
-                            id
-                        }
-                        Model.updateTodo(updated, id)
-                        .then(res => {
-                            state.todos = state.todos.map(todo => {
-                                if(todo.id == id) {
-                                    todo = updated
-                                }
-                                return todo
-                            })
-                        }).catch(err => {
-                            console.log(err)
-                        })
-                    }
-                    // handles edit to db
-                    if(event.target.getAttribute("data-state") === "Submit") {
-                        let updated = {
-                            title: event.target.parentElement.children.item(0).value,
-                            editable: false,
-                            completed: completeClass,
-                            id
-                        }
-        
-                        Model.updateTodo(updated, id).then(res => {
-                            state.todos = state.todos.map(todo => {
-                                if(todo.id == id) {
-                                    todo = updated
-                                }
-                                return todo
-                            })
-                        }).catch(err => {
-                            console.log(err)
-                        })
-                    }
-                    // handles change from span to input tag
-                    if(event.target.getAttribute("data-state") === "Edit"){
-                        state.todos = state.todos.map(todo => {
-                            if(todo.id == id) {
-                                todo.editable = !todo.editable;
-                            }
-                            return todo
-                        })
-                    }
         })
     };
+
+    const updateTodo = () => {
+         // handles completed strikethroughs
+        let fullList = document.querySelector(".todo-list-full")
+        fullList.addEventListener("click", async (event) => {
+            console.log(event.target)
+            let id = event.target.getAttribute("id")
+            let completeClass = event.target.classList.value.split(" ").includes("completed")
+            if(event.target.tagName === "SPAN") {
+                let updated = {
+                    title: event.target.innerHTML,
+                    completed: !completeClass,
+                    editable: false,
+                    id
+                }
+                Model.updateTodo(updated, id)
+                .then(res => {
+                    state.todos = state.todos.map(todo => {
+                        if(todo.id == id) {
+                            todo = updated
+                        }
+                        return todo
+                    })
+                }).catch(err => {
+                    console.log(err)
+                })
+            }
+            // handles edit to db
+            if(event.target.innerHTML === "Submit") {
+                let updated = {
+                    title: event.target.parentElement.children.item(0).value,
+                    editable: false,
+                    completed: completeClass,
+                    id
+                }
+
+                Model.updateTodo(updated, id).then(res => {
+                    state.todos = state.todos.map(todo => {
+                        if(todo.id == id) {
+                            todo = updated
+                        }
+                        return todo
+                    })
+                }).catch(err => {
+                    console.log(err)
+                })
+            }
+            // handles change from span to input tag
+            if(event.target.innerHTML === "Edit" || event.target.innerHTML === "Submit"){
+                let newTodos = state.todos.map(todo => {
+                    if(todo.id == id) {
+                        todo.editable = !todo.editable;
+                    }
+                    return todo
+                })
+                state.todos = newTodos
+            }
+        })
+    }
 
     const bootstrap = () => {
         let count = 0;
         addTodo();
         removeTodo();
-        // updateTodo();
+        updateTodo();
         getTodos();
         state.subscribe(() => {
             View.updateTodoList(state.todos);
@@ -219,3 +229,4 @@ const ViewModel = ((View, Model) => {
 })(View, Model);
 
 ViewModel.bootstrap();
+console.log(ViewModel.state)
