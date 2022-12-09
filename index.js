@@ -170,9 +170,7 @@ const ViewModel = ((View, Model) => {
                         })
                     }
                     // handles edit to db
-                    console.log(event.target)
                     if(event.target.getAttribute("data-state") === "Submit") {
-                        console.log(event.target)
                         let updated = {
                             title: event.target.parentElement.children.item(0).value,
                             editable: false,
@@ -181,7 +179,6 @@ const ViewModel = ((View, Model) => {
                         }
         
                         Model.updateTodo(updated, id).then(res => {
-                            console.log("sent request")
                             state.todos = state.todos.map(todo => {
                                 if(todo.id == id) {
                                     todo = updated
@@ -222,4 +219,3 @@ const ViewModel = ((View, Model) => {
 })(View, Model);
 
 ViewModel.bootstrap();
-console.log(ViewModel.state)
